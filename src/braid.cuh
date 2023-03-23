@@ -1,5 +1,5 @@
 #pragma once
-#inculde <stdint.h>
+#include <stdint.h>
 
 #define E 13
 #define D (E+1)
@@ -41,4 +41,4 @@ typedef fragment_t block_group_t[N];
 //} block_group_t;
 #define size_block_group_t (N * size_fragment_t)
 
-__global__ void braid(init_group_t);
+__global__ void braid(init_group_t*, block_group_t*);
