@@ -1,5 +1,6 @@
 #pragma once
 #include <stdint.h>
+#include "main.cuh"
 
 #define E 13
 #define D (E+1)
@@ -41,4 +42,18 @@ typedef fragment_t block_group_t[N];
 //} block_group_t;
 #define size_block_group_t (N * size_fragment_t)
 
-__global__ void braid(init_group_t*, block_group_t*);
+struct multiple_init_group
+{
+	init_group_t array[ITER];
+};
+
+#define M_INIT_SIZE (sizeof(struct multiple_init_group))
+
+struct multiple_block_group
+{
+	block_group_t array[ITER];
+};
+
+#define M_BLOCK_SIZE (sizeof(struct multiple_block_group))
+
+__global__ void braid(struct multiple_init_group*, struct multiple_block_group*);
