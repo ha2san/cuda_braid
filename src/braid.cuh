@@ -1,5 +1,5 @@
 #pragma once
-#inculde <stdint.h>
+#include <stdint.h>
 
 #define E 13
 #define D (E+1)
@@ -22,9 +22,9 @@ typedef uint8_t fragment_t[FRAGMENT_BYTES];
 
 #define size_fragment_t (FRAGMENT_BYTES * sizeof(uint8_t))
 
-//#define GROUP_SIZE 1
-//const unsigned int BLOCK_BYTE_SIZE =  N*8 
-//const unsigned int GROUP_BYTE_SIZE = BLOCK_BYTE_SIZE * GROUP_SIZE;
+#define GROUP_SIZE 1
+const unsigned int BLOCK_BYTE_SIZE =  N*FRAGMENT_BYTES; 
+const unsigned int GROUP_BYTE_SIZE = BLOCK_BYTE_SIZE * GROUP_SIZE;
 
 #define INIT_SIZE 4
 #define INIT_MASK (INIT_SIZE - 1)
@@ -41,4 +41,4 @@ typedef fragment_t block_group_t[N];
 //} block_group_t;
 #define size_block_group_t (N * size_fragment_t)
 
-__global__ void braid(init_group_t);
+__global__ void braid(init_group_t*, block_group_t*);
