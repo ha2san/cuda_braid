@@ -11,6 +11,15 @@ __device__ void custom_memcpy(uint8_t* in, uint8_t* out, size_t byte_length)
 
 }
 
+__device__ void custom_memcpy(uint8_t* in, uint8_t* out, size_t byte_length)
+{
+	for(size_t i = 0; i < byte_length; i++)
+	{
+		out[i] = in[i];
+	}
+
+}
+
 __device__ void update_key(uint8_t* key, const uint8_t* buffer)
 {
     for(size_t i = 0; i < FRAGMENT_BYTES; i++)
