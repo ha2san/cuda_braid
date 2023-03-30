@@ -16,9 +16,14 @@ __global__ void init_group_array(init_group_t d_x)
 
 __global__ void chain_computation(struct multiple_init_group* d_x,struct multiple_block_group* d_res)
 {
-    for (size_t i = 0; i < FRAGMENT_BYTES; i++)
+    for (size_t init_i = 0; init_i < INIT_SIZE; init_i++)
     {
-        (d_x->array)[blockIdx.x][threadIdx.x][i] = d_res->array[blockIdx.x][N-1-threadIdx.x][i];
+        for (size_t i = 0; i < FRAGMENT_BYTES; i++)
+        {
+            size_t iter = blockIdx.x* blockDim.x + threadIdx.x; 
+            //(d_x->array)[blockIdx.x][threadIdx.x][i] = d_res->array[blockIdx.x][N-1-threadIdx.x][i];
+            (d_x->array)[iter][init_i][i] = d_res->array[iter][init_i][i];
+        }
     }
 }
 
@@ -55,26 +60,37 @@ int main() {
             checks_error("init_group_array");
         }
 
-        chain_computation<<<ITER,INIT_SIZE>>>(d_x,d_res);
+        //chain_computation<<<ITER,INIT_SIZE>>>(d_x,d_res);
+        chain_computation<<<NB_BLOCKS,NB_THREADS>>>(d_x,d_res);
         checks_error("chain_computation");
-        std::cout << "Running with iter = " << ITER << std::endl;
+        //std::cout << "Running with iter = " << ITER << std::endl;
+        std::cout << "Running with " << NB_BLOCKS << " blocks and " << NB_THREADS << " threads" << std::endl;
+        //vector containing time for each run
+        double read_speeds[RUNS];
         for (int i = 0; i < RUNS; i++) {
             auto start = std::chrono::high_resolution_clock::now();
             //braid<<<ITER,1>>>(d_x,d_res);
             braid<<<NB_BLOCKS, NB_THREADS>>>(d_x,d_res);
             checks_error("braid");
 
-            chain_computation<<<ITER,INIT_SIZE>>>(d_x,d_res);
+            //chain_computation<<<ITER,INIT_SIZE>>>(d_x,d_res);
+            chain_computation<<<NB_BLOCKS,NB_THREADS>>>(d_x,d_res);
             checks_error("chain_computation");
             cudaMemcpy(h_x, d_x, M_BLOCK_SIZE, cudaMemcpyDeviceToHost);
             cudaMemcpy(h_res, d_res, M_INIT_SIZE, cudaMemcpyDeviceToHost);
             auto end = std::chrono::high_resolution_clock::now();
             auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-            std::cout << "Runtime per block: " << elapsed.count() << " ms for " << ITER << " \"braids\" in parralel" << std::endl;
+            //std::cout << "Runtime per block: " << elapsed.count() << " ms for " << ITER << " \"braids\" in parralel" << std::endl;
             double elapsed_double = std::chrono::duration<double, std::milli>(elapsed).count();
             double read_speed = (ITER*(GROUP_BYTE_SIZE * 1000.0))/ (elapsed_double * (double)(1<<20));
-            std::cout << "Read speed = " << read_speed << "MB/s" << std::endl;
+            read_speeds[i] = read_speed;
+            //std::cout << "Read speed = " << read_speed << "MB/s" << std::endl;
         }
+        double sum = 0;
+        for (int i = 0; i < RUNS; i++) {
+            sum += read_speeds[i];
+        }
+        std::cout << "Average read speed = " << sum / RUNS << "MB/s" << std::endl;
     }
     return 0;
 }
