@@ -72,7 +72,7 @@ __device__ void siphash(const void *in, const size_t inlen, const void *k, uint8
     const unsigned char *ni = (const unsigned char *)in;
     const unsigned char *kk = (const unsigned char *)k;
 
-    assert((outlen == 8) || (outlen == 16));
+    assert((outlen == 8)); //|| (outlen == 16));
     uint64_t v0 = UINT64_C(0x736f6d6570736575);
     uint64_t v1 = UINT64_C(0x646f72616e646f6d);
     uint64_t v2 = UINT64_C(0x6c7967656e657261);
@@ -89,8 +89,8 @@ __device__ void siphash(const void *in, const size_t inlen, const void *k, uint8
     v1 ^= k1;
     v0 ^= k0;
 
-    if (outlen == 16)
-        v1 ^= 0xee;
+    //if (outlen == 16)
+    //    v1 ^= 0xee;
 
     for (; ni != end; ni += 8) {
         m = U8TO64_LE(ni);
@@ -135,10 +135,10 @@ __device__ void siphash(const void *in, const size_t inlen, const void *k, uint8
 
     v0 ^= b;
 
-    if (outlen == 16)
-        v2 ^= 0xee;
-    else
-        v2 ^= 0xff;
+    //if (outlen == 16)
+    //    v2 ^= 0xee;
+    //else
+    v2 ^= 0xff;
 
     for (i = 0; i < dROUNDS; ++i)
         SIPROUND;
