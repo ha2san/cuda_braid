@@ -35,8 +35,8 @@ __global__ void braid(iter_init_group_t initss,iter_block_group_t blocks)
     {
         custom_memcpy( inits+((i & INIT_MASK))*FRAGMENT_BYTES,block+i*FRAGMENT_BYTES, size_fragment_t);
     }
-    if(index_braid == 1)
-        printf("block after first memcpy %d\n",block[0]);
+//    if(index_braid == 1)
+//        printf("block after first memcpy %d\n",block[0]);
     size_t start = N - (SIZE % N);
 
     uint8_t buffer[FRAGMENT_BYTES] = {0};
@@ -51,14 +51,14 @@ __global__ void braid(iter_init_group_t initss,iter_block_group_t blocks)
             size_t target = (index + N - jump) & INDEX_MASK;
             update_key(key,buffer);
             siphash(block+target*FRAGMENT_BYTES,FRAGMENT_BYTES,key,buffer,FRAGMENT_BYTES);
-            if(index_braid == 1 && i == 0 && j == 0)
-                printf("buffer is %d\n", buffer[0]);
+            //if(index_braid == 1 && i == 0 && j == 0)
+            //    printf("buffer is %d\n", buffer[0]);
         }
 
         custom_memcpy( buffer,block+(index)*FRAGMENT_BYTES, size_fragment_t);
     }
-    if(index_braid == 1)
-        printf("block after second memcpy %d\n",block[0]);
+//    if(index_braid == 1)
+//        printf("block after second memcpy %d\n",block[0]);
 }
 
 

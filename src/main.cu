@@ -31,9 +31,9 @@ __global__ void chain_computation(iter_init_group_t d_x,iter_block_group_t d_res
             d_x[index_init] = d_res[index_block+iter*N*FRAGMENT_BYTES]; 
         }
     }
-    if (iter == 1){
-        printf("\n");
-    }
+//    if (iter == 1){
+//        printf("\n");
+//    }
     
 }
 
@@ -99,9 +99,11 @@ int main() {
         std::cout << "CUDA doesn't work" << std::endl;
     }else
     {
-        iter_init_group_t h_x;
+        //iter_init_group_t h_x; 
+        //iter_block_group_t h_res;
+        uint8_t* h_x = (uint8_t*) malloc(M_INIT_SIZE);
+        uint8_t* h_res = (uint8_t*) malloc(M_BLOCK_SIZE); 
         uint8_t* d_x;
-        iter_block_group_t h_res;
         uint8_t* d_res;
         cudaMalloc((void**)&d_x,M_INIT_SIZE);
         cudaMalloc((void**)&d_res,M_BLOCK_SIZE);
@@ -112,29 +114,29 @@ int main() {
             checks_error("init_group_array: ");
         }
 
-        show_init<<<NB_BLOCKS,NB_THREADS>>>(d_x);
+        //show_init<<<NB_BLOCKS,NB_THREADS>>>(d_x);
 
-        show_block<<<NB_BLOCKS,NB_THREADS>>>(d_res);
+        //show_block<<<NB_BLOCKS,NB_THREADS>>>(d_res);
         braid<<<NB_BLOCKS, NB_THREADS>>>(d_x,d_res);
         checks_error("braid");
-        show_block<<<NB_BLOCKS,NB_THREADS>>>(d_res);
-        show_init<<<NB_BLOCKS,NB_THREADS>>>(d_x);
+        //show_block<<<NB_BLOCKS,NB_THREADS>>>(d_res);
+        //show_init<<<NB_BLOCKS,NB_THREADS>>>(d_x);
 
         chain_computation<<<NB_BLOCKS,NB_THREADS>>>(d_x,d_res);
         checks_error("chain_computation: ");
-        show_init<<<NB_BLOCKS,NB_THREADS>>>(d_x);
-        show_block<<<NB_BLOCKS,NB_THREADS>>>(d_res);
+        //show_init<<<NB_BLOCKS,NB_THREADS>>>(d_x);
+        //show_block<<<NB_BLOCKS,NB_THREADS>>>(d_res);
         std::cout << "Running with " << NB_BLOCKS << " blocks and " << NB_THREADS << " threads" << std::endl;
         double read_speeds[RUNS];
         for (int i = 0; i < RUNS; i++) {
             auto start = std::chrono::high_resolution_clock::now();
-            show_init<<<NB_BLOCKS,NB_THREADS>>>(d_x);
+            //show_init<<<NB_BLOCKS,NB_THREADS>>>(d_x);
             braid<<<NB_BLOCKS, NB_THREADS>>>(d_x,d_res);
             checks_error("braid");
 
             chain_computation<<<NB_BLOCKS,NB_THREADS>>>(d_x,d_res);
             checks_error("chain_computation: ");
-            show_init<<<NB_BLOCKS,NB_THREADS>>>(d_x);
+            //show_init<<<NB_BLOCKS,NB_THREADS>>>(d_x);
             cudaMemcpy(h_x, d_x, M_BLOCK_SIZE, cudaMemcpyDeviceToHost);
             cudaMemcpy(h_res, d_res, M_INIT_SIZE, cudaMemcpyDeviceToHost);
             auto end = std::chrono::high_resolution_clock::now();
@@ -148,7 +150,7 @@ int main() {
             sum += read_speeds[i];
         }
         std::cout << "Average read speed = " << sum / RUNS << "MB/s" << std::endl;
-        show_init<<<NB_BLOCKS,NB_THREADS>>>(d_x);
+        //show_init<<<NB_BLOCKS,NB_THREADS>>>(d_x);
     }
     return 0;
 }
